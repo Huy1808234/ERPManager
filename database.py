@@ -155,75 +155,7 @@ def init_db():
     """)
 
     conn.commit()
-    seed_initial_data(conn)
     conn.close()
-
-def seed_initial_data(conn):
-    cursor = conn.cursor()
-
-    # Thêm sản phẩm mẫu nếu kho trống
-    cursor.execute("SELECT COUNT(*) FROM products")
-    if cursor.fetchone()[0] == 0:
-        sample_products = [
-            ("DA_0X4", "Đá 0x4 (Đá cấp phối)", "m³", 280000, 250.0, 30.0, "Dùng làm nền đường, móng nhà"),
-            ("DA_1X2_XANH", "Đá 1x2 Xanh Tân Hạnh", "m³", 340000, 180.0, 20.0, "Đá bê tông chịu lực"),
-            ("DA_MI", "Đá mi bụi / Đá mi sàng", "m³", 220000, 300.0, 40.0, "Dùng đổ sàn, chèn đường ống"),
-            ("CAT_VANG", "Cát vàng bê tông hạt to", "m³", 360000, 400.0, 50.0, "Cát tô, đổ bê tông"),
-            ("CAT_XAY", "Cát xây tô (Cát mịn)", "m³", 260000, 350.0, 40.0, "Xây tường"),
-            ("DAT_SAN_LAPI", "Đất san lấp mặt bằng", "m³", 120000, 1000.0, 100.0, "San lấp công trình lớn"),
-            ("XI_MANG_INSEE", "Xi măng INSEE Đa Năng", "bao", 92000, 500.0, 50.0, "Bao 50kg"),
-            ("GACH_TUYNEL", "Gạch 4 lỗ Tuynel", "viên", 1300, 20000.0, 2000.0, "Xây tường 10, 20"),
-            ("SAT_PHI_12", "Sắt Cây Phi 12 (CB300)", "cây", 145000, 300.0, 30.0, "Cây dài 11.7m"),
-        ]
-        cursor.executemany("""
-            INSERT INTO products (code, name, unit, price, stock, min_stock, note)
-            VALUES (?, ?, ?, ?, ?, ?, ?)
-        """, sample_products)
-
-    # Thêm khách hàng mẫu
-    cursor.execute("SELECT COUNT(*) FROM customers")
-    if cursor.fetchone()[0] == 0:
-        now_str = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-        sample_customers = [
-            ("Công ty Xây dựng Phát Đạt (Nhà thầu A)", "0908123456", "Đường 30/4, P. Tân Phước, TX. Phú Mỹ", 15000000, 100000000, 1, now_str),
-            ("Nhà thầu Anh Tuấn (Công trình KCN Phú Mỹ)", "0913987654", "KCN Phú Mỹ 3, Tân Phước", 8500000, 50000000, 1, now_str),
-            ("Chú Bảy (Sửa nhà Tân Phước)", "0937112233", "Hẻm 12 Lê Thị Hồng Phong, Tân Phước", 0, 10000000, 0, now_str),
-        ]
-        cursor.executemany("""
-            INSERT INTO customers (name, phone, address, debt, credit_limit, is_contractor, created_at)
-            VALUES (?, ?, ?, ?, ?, ?, ?)
-        """, sample_customers)
-
-    # Thêm đội xe mẫu
-    cursor.execute("SELECT COUNT(*) FROM vehicles")
-    if cursor.fetchone()[0] == 0:
-        sample_vehicles = [
-            ("60C-123.45", "Tài xế Minh (Xe Cát Đá 2.2 khối)", "0988111222", 2.2, 50000, 30000, "Rảnh"),
-            ("60C-678.90", "Tài xế Hùng (Xe Ben 5 khối)", "0977333444", 5.0, 90000, 50000, "Rảnh"),
-            ("72C-555.88", "Tài xế Quốc (Xe Ba Gõ / Nhỏ)", "0966555666", 1.5, 40000, 20000, "Rảnh"),
-        ]
-        cursor.executemany("""
-            INSERT INTO vehicles (plate_number, driver_name, phone, capacity_m3, pay_per_trip, fuel_per_trip, status)
-            VALUES (?, ?, ?, ?, ?, ?, ?)
-        """, sample_vehicles)
-
-    # Thêm nhân viên mẫu
-    cursor.execute("SELECT COUNT(*) FROM employees")
-    if cursor.fetchone()[0] == 0:
-        now_str = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-        sample_employees = [
-            ("NV001", "Tài xế Minh", "0988111222", "Tài xế xe ben", "Theo chuyến", 0, 50000, 500000, now_str),
-            ("NV002", "Tài xế Hùng", "0977333444", "Tài xế xe ben", "Theo chuyến", 0, 90000, 500000, now_str),
-            ("NV003", "Chị Thu", "0912345678", "Kế toán bán hàng", "Lương tháng", 9000000, 0, 1000000, now_str),
-            ("NV004", "Anh Tuấn", "0934567890", "Lái xe múc cát/đá", "Lương tháng", 12000000, 0, 1000000, now_str),
-            ("NV005", "Anh Nam", "0945678901", "Quản lý bãi & Bốc xếp", "Lương tháng", 8500000, 0, 500000, now_str),
-        ]
-        cursor.executemany("""
-            INSERT INTO employees (code, name, phone, position, salary_type, base_salary, pay_per_trip, allowance, created_at)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
-        """, sample_employees)
-
-    conn.commit()
 
 # --- HELPER DATABASE API FUNCTIONS ---
 

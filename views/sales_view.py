@@ -501,6 +501,8 @@ class SalesView(ttk.Frame):
                     self.refresh_callback()
             else:
                 messagebox.showerror("Lỗi", f"Không tìm thấy đơn hàng {order_code}!")
+
+    def submit_order(self):
         try:
             cust_text = self.cbo_customer.get().strip()
             prod_idx = self.cbo_product.current()
