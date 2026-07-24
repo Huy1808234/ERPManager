@@ -5,9 +5,15 @@ SQLite backend with thread-safe connection and helper functions.
 
 import sqlite3
 import os
+import sys
 from datetime import datetime
 
-DB_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), "vlxd_thongnhat.db")
+if getattr(sys, 'frozen', False):
+    BASE_DIR = os.path.dirname(sys.executable)
+else:
+    BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+
+DB_PATH = os.path.join(BASE_DIR, "vlxd_thongnhat.db")
 
 def get_connection():
     conn = sqlite3.connect(DB_PATH)

@@ -1,6 +1,6 @@
 r"""
 PyInstaller Auto-Build Script for VLXD Thống Nhất
-Builds BOTH One-File (Single .exe) and One-Dir modes.
+Builds BOTH One-File (Single .exe) and One-Dir modes with clean database setup.
 """
 
 import subprocess
@@ -11,6 +11,13 @@ def build_standalone_exe():
     print("==================================================")
     print("BAT DAU DONG GOI UNG DUNG VLXD THONG NHAT (.EXE)")
     print("==================================================")
+
+    # 1. Kill any running old executable processes to unlock files
+    try:
+        subprocess.run(["taskkill", "/f", "/im", "VLXD_ThongNhat_SingleFile.exe"], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+        subprocess.run(["taskkill", "/f", "/im", "VLXD_ThongNhat.exe"], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+    except Exception:
+        pass
 
     # Check if pyinstaller is installed
     try:
@@ -24,7 +31,7 @@ def build_standalone_exe():
     if not os.path.exists(pyinstaller_bin):
         pyinstaller_bin = "pyinstaller"
 
-    # 1. BUILD SINGLE FILE MODE (--onefile): NO _internal FOLDER NEEDED!
+    # 2. BUILD SINGLE FILE MODE (--onefile)
     print("\n[1/2] Dang dong goi CHE DO 1 FILE .EXE DUY NHAT (Khong can thu muc _internal)...")
     cmd_onefile = [
         pyinstaller_bin,
@@ -32,12 +39,11 @@ def build_standalone_exe():
         "--onefile",
         "--windowed",
         "--name=VLXD_ThongNhat_SingleFile",
-        "--add-data=vlxd_thongnhat.db;.",
         "main.py"
     ]
     subprocess.check_call(cmd_onefile)
 
-    # 2. BUILD FOLDER MODE (--onedir)
+    # 3. BUILD FOLDER MODE (--onedir)
     print("\n[2/2] Dang dong goi CHE DO THU MUC (Chay khoi dong sieu nhanh)...")
     cmd_onedir = [
         pyinstaller_bin,
@@ -45,13 +51,12 @@ def build_standalone_exe():
         "--onedir",
         "--windowed",
         "--name=VLXD_ThongNhat",
-        "--add-data=vlxd_thongnhat.db;.",
         "main.py"
     ]
     subprocess.check_call(cmd_onedir)
 
     print("\n==================================================")
-    print("HOAN TAT DONG GOI CA 2 CHE DO!")
+    print("HOAN TAT DONG GOI CA 2 CHE DO BAN MOI NHAT!")
     print("1. File 1 File duy nhat (khong thu muc phu): dist/VLXD_ThongNhat_SingleFile.exe")
     print("2. File dang thu muc (khoi dong nhanh): dist/VLXD_ThongNhat/VLXD_ThongNhat.exe")
     print("==================================================")
