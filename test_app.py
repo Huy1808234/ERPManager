@@ -68,5 +68,19 @@ class TestVLXDSystem(unittest.TestCase):
 
         self.assertAlmostEqual(updated_cust['debt'], initial_debt - pay_amount, places=2, msg="Trừ tiền nợ chưa đúng")
 
+    def test_payroll_calculation(self):
+        """Test employee payroll and advance salary calculations"""
+        employees = database.get_all_employees()
+        self.assertGreater(len(employees), 0, "Danh sách nhân viên không được rỗng")
+
+        emp = employees[0]
+        database.record_salary_advance(emp['id'], 500000, "Tạm ứng test")
+
+        payroll = database.get_payroll_summary()
+        emp_pay = [p for p in payroll if p['id'] == emp['id']][0]
+
+        self.assertEqual(emp_pay['advances'], 500000, "Tính tiền tạm ứng chưa đúng")
+        self.assertGreaterEqual(emp_pay['gross_salary'], 500000, "Tổng thu nhập phải >= phụ cấp")
+
 if __name__ == "__main__":
     unittest.main()

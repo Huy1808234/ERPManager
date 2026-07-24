@@ -126,6 +126,34 @@ def init_db():
     );
     """)
 
+    # 8. Nhân viên (Employees)
+    cursor.execute("""
+    CREATE TABLE IF NOT EXISTS employees (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        code TEXT UNIQUE NOT NULL,
+        name TEXT NOT NULL,
+        phone TEXT,
+        position TEXT NOT NULL, -- 'Tài xế xe ben', 'Lái xe múc', 'Kế toán bán hàng', 'Bốc xếp / Bảo vệ'
+        salary_type TEXT NOT NULL DEFAULT 'Lương tháng', -- 'Theo chuyến', 'Lương tháng'
+        base_salary REAL NOT NULL DEFAULT 0,
+        pay_per_trip REAL NOT NULL DEFAULT 50000,
+        allowance REAL NOT NULL DEFAULT 0,
+        created_at TEXT
+    );
+    """)
+
+    # 9. Ứng lương & Phụ cấp (Salary Advances)
+    cursor.execute("""
+    CREATE TABLE IF NOT EXISTS salary_advances (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        employee_id INTEGER NOT NULL,
+        amount REAL NOT NULL DEFAULT 0,
+        advance_date TEXT NOT NULL,
+        note TEXT,
+        FOREIGN KEY (employee_id) REFERENCES employees(id)
+    );
+    """)
+
     conn.commit()
     seed_initial_data(conn)
     conn.close()
@@ -178,6 +206,22 @@ def seed_initial_data(conn):
             INSERT INTO vehicles (plate_number, driver_name, phone, capacity_m3, pay_per_trip, fuel_per_trip, status)
             VALUES (?, ?, ?, ?, ?, ?, ?)
         """, sample_vehicles)
+
+    # Thêm nhân viên mẫu
+    cursor.execute("SELECT COUNT(*) FROM employees")
+    if cursor.fetchone()[0] == 0:
+        now_str = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        sample_employees = [
+            ("NV001", "Tài xế Minh", "0988111222", "Tài xế xe ben", "Theo chuyến", 0, 50000, 500000, now_str),
+            ("NV002", "Tài xế Hùng", "0977333444", "Tài xế xe ben", "Theo chuyến", 0, 90000, 500000, now_str),
+            ("NV003", "Chị Thu", "0912345678", "Kế toán bán hàng", "Lương tháng", 9000000, 0, 1000000, now_str),
+            ("NV004", "Anh Tuấn", "0934567890", "Lái xe múc cát/đá", "Lương tháng", 12000000, 0, 1000000, now_str),
+            ("NV005", "Anh Nam", "0945678901", "Quản lý bãi & Bốc xếp", "Lương tháng", 8500000, 0, 500000, now_str),
+        ]
+        cursor.executemany("""
+            INSERT INTO employees (code, name, phone, position, salary_type, base_salary, pay_per_trip, allowance, created_at)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+        """, sample_employees)
 
     conn.commit()
 
@@ -452,6 +496,108 @@ def get_driver_trip_summary():
     rows = cursor.fetchall()
     conn.close()
     return [dict(r) for r in rows]
+
+def get_all_employees():
+    conn = get_connection()
+    cursor = conn.cursor()
+    cursor.execute("SELECT * FROM employees ORDER BY id ASC")
+    rows = cursor.fetchall()
+    conn.close()
+    return [dict(r) for r in rows]
+
+def add_employee(code, name, phone, position, salary_type, base_salary, pay_per_trip, allowance):
+    conn = get_connection()
+    cursor = conn.cursor()
+    now_str = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    cursor.execute("""
+        INSERT INTO employees (code, name, phone, position, salary_type, base_salary, pay_per_trip, allowance, created_at)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+    """, (code, name, phone, position, salary_type, base_salary, pay_per_trip, allowance, now_str))
+    conn.commit()
+    conn.close()
+
+def update_employee(emp_id, code, name, phone, position, salary_type, base_salary, pay_per_trip, allowance):
+    conn = get_connection()
+    cursor = conn.cursor()
+    cursor.execute("""
+        UPDATE employees
+        SET code = ?, name = ?, phone = ?, position = ?, salary_type = ?, base_salary = ?, pay_per_trip = ?, allowance = ?
+        WHERE id = ?
+    """, (code, name, phone, position, salary_type, base_salary, pay_per_trip, allowance, emp_id))
+    conn.commit()
+    conn.close()
+
+def delete_employee(emp_id):
+    conn = get_connection()
+    cursor = conn.cursor()
+    cursor.execute("DELETE FROM salary_advances WHERE employee_id = ?", (emp_id,))
+    cursor.execute("DELETE FROM employees WHERE id = ?", (emp_id,))
+    conn.commit()
+    conn.close()
+
+def record_salary_advance(employee_id, amount, note="Tạm ứng lương"):
+    conn = get_connection()
+    cursor = conn.cursor()
+    now_str = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    cursor.execute("""
+        INSERT INTO salary_advances (employee_id, amount, advance_date, note)
+        VALUES (?, ?, ?, ?)
+    """, (employee_id, amount, now_str, note))
+    conn.commit()
+    conn.close()
+
+def get_payroll_summary():
+    conn = get_connection()
+    cursor = conn.cursor()
+
+    employees = [dict(r) for r in cursor.execute("SELECT * FROM employees ORDER BY id ASC").fetchall()]
+    payroll_data = []
+
+    for emp in employees:
+        emp_id = emp['id']
+        emp_name = emp['name']
+        salary_type = emp['salary_type']
+
+        trips_count = 0
+        if salary_type == 'Theo chuyến':
+            cursor.execute("""
+                SELECT COALESCE(SUM(oi.trips_count), 0) as trips
+                FROM orders o
+                JOIN vehicles v ON o.vehicle_id = v.id
+                JOIN order_items oi ON o.id = oi.order_id
+                WHERE v.driver_name LIKE ?
+            """, (f"%{emp_name}%",))
+            row = cursor.fetchone()
+            trips_count = row['trips'] if row else 0
+
+        trip_pay = trips_count * emp['pay_per_trip'] if salary_type == 'Theo chuyến' else 0
+        gross_salary = emp['base_salary'] + trip_pay + emp['allowance']
+
+        cursor.execute("SELECT COALESCE(SUM(amount), 0) as total_advance FROM salary_advances WHERE employee_id = ?", (emp_id,))
+        adv_row = cursor.fetchone()
+        advances = adv_row['total_advance'] if adv_row else 0
+
+        net_salary = max(0, gross_salary - advances)
+
+        payroll_data.append({
+            'id': emp_id,
+            'code': emp['code'],
+            'name': emp['name'],
+            'position': emp['position'],
+            'salary_type': salary_type,
+            'base_salary': emp['base_salary'],
+            'pay_per_trip': emp['pay_per_trip'],
+            'trips_count': trips_count,
+            'trip_pay': trip_pay,
+            'allowance': emp['allowance'],
+            'gross_salary': gross_salary,
+            'advances': advances,
+            'net_salary': net_salary,
+            'phone': emp['phone'] or ""
+        })
+
+    conn.close()
+    return payroll_data
 
 if __name__ == "__main__":
     init_db()

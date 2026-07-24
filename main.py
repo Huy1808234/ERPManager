@@ -14,13 +14,14 @@ from views.inventory_view import InventoryView
 from views.dispatch_view import DispatchView
 from views.debt_view import DebtView
 from views.customer_view import CustomerView
+from views.payroll_view import PayrollView
 
 class VLXDApp(tk.Tk):
     def __init__(self):
         super().__init__()
 
         self.title("VẬT LIỆU XÂY DỰNG THỐNG NHẤT - BÃI CÁT ĐÁ TÂN PHƯỚC (QUẢN LÝ NỘI BỘ)")
-        self.geometry("1200x720")
+        self.geometry("1240x730")
         self.minsize(1024, 600)
 
         # Apply clean ttk theme styling
@@ -29,7 +30,7 @@ class VLXDApp(tk.Tk):
 
         # Custom Colors & Fonts
         style.configure(".", font=("Segoe UI", 10))
-        style.configure("TNotebook.Tab", font=("Segoe UI", 10, "bold"), padding=[15, 8])
+        style.configure("TNotebook.Tab", font=("Segoe UI", 10, "bold"), padding=[12, 8])
         style.configure("Treeview.Heading", font=("Segoe UI", 10, "bold"), background="#e2e8f0", foreground="#0f172a")
 
         # Initialize SQLite DB
@@ -82,6 +83,10 @@ class VLXDApp(tk.Tk):
         self.customer_tab = CustomerView(self.notebook, refresh_callback=self.refresh_all_tabs)
         self.notebook.add(self.customer_tab, text="👥 Hồ Sơ Khách Hàng")
 
+        # Tab 6: Payroll & Salary Management
+        self.payroll_tab = PayrollView(self.notebook, refresh_callback=self.refresh_all_tabs)
+        self.notebook.add(self.payroll_tab, text="💵 Quản Lý Bảng Lương")
+
         # 3. Status Footer Bar
         footer = ttk.Frame(self)
         footer.pack(fill="x", side="bottom", ipady=3)
@@ -111,6 +116,7 @@ class VLXDApp(tk.Tk):
         self.dispatch_tab.load_dispatch_data()
         self.debt_tab.load_debt_data()
         self.customer_tab.load_customers()
+        self.payroll_tab.load_payroll_data()
 
 if __name__ == "__main__":
     app = VLXDApp()
