@@ -1,0 +1,13 @@
+# Python & PyInstaller Ignore
+__pycache__/
+*.py[cod]
+*$py.class
+build/
+dist/
+*.spec
+*.db
+.vscode/
+.idea/
+mingit/
+VLXD_ThongNhat_Setup/
+*.zip
