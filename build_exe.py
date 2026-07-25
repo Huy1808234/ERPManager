@@ -19,6 +19,18 @@ def build_standalone_exe():
     except Exception:
         pass
 
+    import shutil
+    db_backup_path = "vlxd_thongnhat_backup.db"
+    db_original_path = os.path.join("dist", "VLXD_ThongNhat", "vlxd_thongnhat.db")
+    
+    # BACKUP DB before pyinstaller deletes the dist folder
+    if os.path.exists(db_original_path):
+        print(f"[*] Dang sao luu du lieu tu {db_original_path}...")
+        try:
+            shutil.copy2(db_original_path, db_backup_path)
+        except Exception as e:
+            print(f"Loi sao luu: {e}")
+
     # Check if pyinstaller is installed
     try:
         import PyInstaller
@@ -38,8 +50,13 @@ def build_standalone_exe():
         "--noconfirm",
         "--onefile",
         "--windowed",
+        "--hidden-import=plyer.platforms.win.notification",
+        "--hidden-import=tkinterdnd2",
+        "--collect-data=tkinterdnd2",
+        "--icon=assets/app_icon.ico",
+        "--paths=src",
         "--name=VLXD_ThongNhat_SingleFile",
-        "main.py"
+        "src/main.py"
     ]
     subprocess.check_call(cmd_onefile)
 
@@ -50,10 +67,26 @@ def build_standalone_exe():
         "--noconfirm",
         "--onedir",
         "--windowed",
+        "--hidden-import=plyer.platforms.win.notification",
+        "--hidden-import=tkinterdnd2",
+        "--collect-data=tkinterdnd2",
+        "--icon=assets/app_icon.ico",
+        "--paths=src",
         "--name=VLXD_ThongNhat",
-        "main.py"
+        "src/main.py"
     ]
     subprocess.check_call(cmd_onedir)
+
+    # RESTORE DB after pyinstaller finishes
+    if os.path.exists(db_backup_path):
+        print("\n[*] Dang phuc hoi lai du lieu (Database) vao thu muc vua build...")
+        try:
+            shutil.copy2(db_backup_path, db_original_path)
+            # Optionally remove the backup after restoring
+            os.remove(db_backup_path)
+            print("[+] Phuc hoi hoan tat!")
+        except Exception as e:
+            print(f"Loi phuc hoi du lieu: {e}")
 
     print("\n==================================================")
     print("HOAN TAT DONG GOI CA 2 CHE DO BAN MOI NHAT!")

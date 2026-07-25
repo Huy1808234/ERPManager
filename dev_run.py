@@ -30,16 +30,20 @@ def get_py_files_mtime():
 
 def start_dev_mode():
     print("==========================================================")
-    print(" 🚀 KÍCH HOẠT CHẾ ĐỘ AUTO-RELOAD (TỰ TẢI LẠI KHI SỬA CODE)")
+    print(" KÍCH HOẠT CHẾ ĐỘ AUTO-RELOAD (TỰ TẢI LẠI KHI SỬA CODE)")
     print(" Đang theo dõi các file code .py trong dự án...")
     print(" Bạn chỉ cần SỬA & LƯU CODE, phần mềm sẽ tự động bật lại!")
     print("==========================================================")
 
-    main_script = os.path.join(WATCH_DIR, "main.py")
+    main_script = os.path.join(WATCH_DIR, "src", "main.py")
     last_mtime = get_py_files_mtime()
     
+    # Set PYTHONPATH to src so absolute imports like 'import dao' work
+    env = os.environ.copy()
+    env["PYTHONPATH"] = os.path.join(WATCH_DIR, "src") + os.pathsep + env.get("PYTHONPATH", "")
+    
     # Launch main.py initially
-    process = subprocess.Popen([sys.executable, main_script])
+    process = subprocess.Popen([sys.executable, main_script], env=env)
 
     try:
         while True:
@@ -47,7 +51,7 @@ def start_dev_mode():
             current_mtime = get_py_files_mtime()
 
             if current_mtime > last_mtime:
-                print("\n🔄 PHÁT HIỆN THAY ĐỔI CODE! Đang tự động nạp lại phần mềm...")
+                print("\n PHÁT HIỆN THAY ĐỔI CODE! Đang tự động nạp lại phần mềm...")
                 last_mtime = current_mtime
                 
                 # Kill running process
@@ -59,7 +63,7 @@ def start_dev_mode():
                         process.kill()
 
                 # Restart main.py
-                process = subprocess.Popen([sys.executable, main_script])
+                process = subprocess.Popen([sys.executable, main_script], env=env)
 
     except KeyboardInterrupt:
         print("\nĐã dừng chế độ Auto-Reload.")

@@ -5,7 +5,8 @@ Tracks debts, credit limits, payments, and financial history.
 
 import tkinter as tk
 from tkinter import ttk, messagebox
-import database
+import config
+from dao import product_dao, customer_dao, vehicle_dao, order_dao, employee_dao
 from utils import num2vietnamese_words
 
 class DebtView(ttk.Frame):
@@ -25,8 +26,8 @@ class DebtView(ttk.Frame):
         btn_bar = ttk.Frame(self)
         btn_bar.pack(fill="x", pady=(0, 10))
 
-        tk.Button(btn_bar, text="💵 Ghi Nhận Khách Trả Tiền Nợ", bg="#059669", fg="white", font=("Segoe UI", 10, "bold"), padx=10, pady=5, command=self.open_pay_debt_dialog).pack(side="left", padx=(0, 5))
-        tk.Button(btn_bar, text="🔄 Tải Lại Sổ Nợ", bg="#64748b", fg="white", font=("Segoe UI", 10), padx=10, pady=5, command=self.load_debt_data).pack(side="right")
+        tk.Button(btn_bar, text=" Ghi Nhận Khách Trả Tiền Nợ", bg="#059669", fg="white", font=("Segoe UI", 10, "bold"), padx=10, pady=5, command=self.open_pay_debt_dialog).pack(side="left", padx=(0, 5))
+        tk.Button(btn_bar, text=" Tải Lại Sổ Nợ", bg="#64748b", fg="white", font=("Segoe UI", 10), padx=10, pady=5, command=self.load_debt_data).pack(side="right")
 
         # Debt Table
         columns = ("id", "name", "phone", "address", "type", "debt", "limit", "status")
@@ -64,13 +65,13 @@ class DebtView(ttk.Frame):
         for item in self.tree.get_children():
             self.tree.delete(item)
 
-        customers = database.get_all_customers()
+        customers = customer_dao.get_all_customers()
         for c in customers:
             debt = c['debt']
             limit = c['credit_limit']
             is_contractor = "Nhà thầu/Sỉ" if c['is_contractor'] else "Khách lẻ"
 
-            status = "⚠️ NỢ CAO" if debt >= limit * 0.8 else "🟢 AN TOÀN"
+            status = " NỢ CAO" if debt >= limit * 0.8 else " AN TOÀN"
             tag = "overdue" if debt >= limit * 0.8 else "normal"
 
             self.tree.insert("", "end", values=(
@@ -85,7 +86,7 @@ class DebtView(ttk.Frame):
             ), tags=(tag,))
 
     def open_pay_debt_dialog(self):
-        customers = database.get_all_customers()
+        customers = customer_dao.get_all_customers()
         if not customers:
             return
 
@@ -135,7 +136,7 @@ class DebtView(ttk.Frame):
                     messagebox.showwarning("Cảnh báo", "Số tiền trả phải lớn hơn 0!")
                     return
 
-                database.record_debt_payment(cust_id, pay_amt, note)
+                customer_dao.record_debt_payment(cust_id, pay_amt, note)
                 messagebox.showinfo("Thành công", f"Đã ghi nhận thu {pay_amt:,.0f}đ từ {customers[idx]['name']}!")
                 dlg.destroy()
                 self.load_debt_data()

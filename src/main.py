@@ -7,16 +7,21 @@ import tkinter as tk
 from tkinter import ttk, messagebox
 import sys
 import os
+from tkinterdnd2 import TkinterDnD
 
-import database
+import config
+from dao import connection
+from core.background_worker import BackgroundWorker
+from core.system_tray import SystemTrayApp
 from views.sales_view import SalesView
 from views.inventory_view import InventoryView
 from views.dispatch_view import DispatchView
 from views.debt_view import DebtView
 from views.customer_view import CustomerView
 from views.payroll_view import PayrollView
+from views.tax_report_view import TaxReportView
 
-class VLXDApp(tk.Tk):
+class VLXDApp(TkinterDnD.Tk):
     def __init__(self):
         super().__init__()
 
@@ -34,9 +39,30 @@ class VLXDApp(tk.Tk):
         style.configure("Treeview.Heading", font=("Segoe UI", 10, "bold"), background="#e2e8f0", foreground="#0f172a")
 
         # Initialize SQLite DB
-        database.init_db()
+        connection.init_db()
 
         self.setup_ui()
+        
+        # Initialize Background Worker & System Tray
+        self.bg_worker = BackgroundWorker(check_interval=config.BACKGROUND_INTERVAL)
+        self.bg_worker.start()
+        
+        def force_show_tax_tab():
+            # Cố gắng chuyển sang tab Báo cáo thuế (tab số 6)
+            try:
+                self.notebook.select(self.tax_report_tab)
+            except:
+                pass
+                
+        self.tray_app = SystemTrayApp(self, on_show_alert_callback=force_show_tax_tab)
+        self.tray_app.start()
+        
+        # Override Close button to hide to tray instead of quitting
+        self.protocol('WM_DELETE_WINDOW', self.hide_window)
+        
+    def hide_window(self):
+        """Hides the main window to the system tray"""
+        self.withdraw()
 
     def setup_ui(self):
         # 1. Header Banner
@@ -53,7 +79,7 @@ class VLXDApp(tk.Tk):
 
         lbl_subtitle = tk.Label(
             header,
-            text="📍 Tân Phước, TX. Phú Mỹ | 📞 Hotline: 0908.123.456 | 🟢 Offline LAN $0 VNĐ",
+            text=" Tân Phước, TX. Phú Mỹ |  Hotline: 0945643749",
             font=("Segoe UI", 10),
             fg="#475569"
         )
@@ -65,15 +91,15 @@ class VLXDApp(tk.Tk):
 
         # Tab 1: Sales
         self.sales_tab = SalesView(self.notebook, refresh_callback=self.refresh_all_tabs)
-        self.notebook.add(self.sales_tab, text="🛒 Bán Hàng & Tính Số Khối")
+        self.notebook.add(self.sales_tab, text=" Bán Hàng & Tính Số Khối")
 
         # Tab 2: Inventory
         self.inventory_tab = InventoryView(self.notebook, refresh_callback=self.refresh_all_tabs)
-        self.notebook.add(self.inventory_tab, text="📦 Quản Lý Kho & Vật Tư")
+        self.notebook.add(self.inventory_tab, text=" Quản Lý Kho & Vật Tư")
 
         # Tab 3: Dispatch & Drivers
         self.dispatch_tab = DispatchView(self.notebook, refresh_callback=self.refresh_all_tabs)
-        self.notebook.add(self.dispatch_tab, text="🚚 Điều Xe & Số Chuyến")
+        self.notebook.add(self.dispatch_tab, text=" Điều Xe & Số Chuyến")
 
         # Tab 4: Debt & Cash Flow
         self.debt_tab = DebtView(self.notebook, refresh_callback=self.refresh_all_tabs)
@@ -86,6 +112,10 @@ class VLXDApp(tk.Tk):
         # Tab 6: Payroll & Salary Management
         self.payroll_tab = PayrollView(self.notebook, refresh_callback=self.refresh_all_tabs)
         self.notebook.add(self.payroll_tab, text="💵 Quản Lý Bảng Lương")
+
+        # Tab 7: Tax & Invoice Report
+        self.tax_report_tab = TaxReportView(self.notebook)
+        self.notebook.add(self.tax_report_tab, text="📊 Báo Cáo Thuế")
 
         # 3. Status Footer Bar
         footer = ttk.Frame(self)
@@ -112,11 +142,12 @@ class VLXDApp(tk.Tk):
     def refresh_all_tabs(self):
         """Cross-tab refresh controller"""
         self.sales_tab.load_data()
-        self.inventory_tab.load_inventory()
-        self.dispatch_tab.load_dispatch_data()
+        self.inventory_tab.load_data()
+        self.dispatch_tab.load_data()
         self.debt_tab.load_debt_data()
-        self.customer_tab.load_customers()
-        self.payroll_tab.load_payroll_data()
+        self.customer_tab.load_data()
+        self.payroll_tab.load_data()
+        self.tax_report_tab.load_data()
 
 if __name__ == "__main__":
     app = VLXDApp()

@@ -1,0 +1,22 @@
+{
+  "executionEnvironments": [
+    {
+      "root": "src"
+    }
+  ],
+  "extraPaths": [
+    "src"
+  ],
+  "exclude": [
+    "**/__pyrefly_virtual__/**",
+    "C:/__pyrefly_virtual__/**",
+    "C:\\__pyrefly_virtual__\\**",
+    "**/__pycache__/**"
+  ],
+  "ignore": [
+    "**/__pyrefly_virtual__/**",
+    "C:/__pyrefly_virtual__/**",
+    "C:\\__pyrefly_virtual__\\**",
+    "/*__pyrefly_virtual__*/**"
+  ]
+}
