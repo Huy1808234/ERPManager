@@ -40,6 +40,10 @@ class VLXDApp(TkinterDnD.Tk):
 
         # Initialize SQLite DB
         connection.init_db()
+        
+        # Run DB Migrations (Update schema to the latest version if needed)
+        from core import migration
+        migration.run_migrations()
 
         self.setup_ui()
         

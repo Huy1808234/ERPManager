@@ -1,11 +1,22 @@
 from dao.connection import get_connection
 from datetime import datetime
 
-def create_order_transaction(customer_id, vehicle_id, product_id, volume_per_trip, trips_count, unit_price, shipping_cost, paid_amount, note):
+def create_order_transaction(customer_id, vehicle_id, product_id, volume_per_trip, trips_count, unit_price, shipping_cost, paid_amount, note, order_date=None):
     conn = get_connection()
     cursor = conn.cursor()
-    now_str = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-    code = f"HD{datetime.now().strftime('%Y%m%d%H%M%S')}"
+    
+    if order_date:
+        if " " in order_date:
+            now_str = order_date
+            code_time = order_date.replace("-", "").replace(":", "").replace(" ", "")
+        else:
+            now_str = f"{order_date} {datetime.now().strftime('%H:%M:%S')}"
+            code_time = order_date.replace("-", "") + datetime.now().strftime('%H%M%S')
+        code = f"HD{code_time}"
+    else:
+        now_str = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        code = f"HD{datetime.now().strftime('%Y%m%d%H%M%S')}"
+        
     total_volume = float(volume_per_trip) * int(trips_count)
     product_amount = total_volume * float(unit_price)
     total_amount = product_amount + float(shipping_cost)

@@ -21,7 +21,12 @@ def init_db():
     cursor.execute('''CREATE TABLE IF NOT EXISTS debt_records (id INTEGER PRIMARY KEY AUTOINCREMENT, customer_id INTEGER NOT NULL, order_id INTEGER, type TEXT NOT NULL, amount REAL NOT NULL, balance_after REAL NOT NULL, created_at TEXT NOT NULL, note TEXT, FOREIGN KEY (customer_id) REFERENCES customers(id), FOREIGN KEY (order_id) REFERENCES orders(id));''')
     cursor.execute('''CREATE TABLE IF NOT EXISTS employees (id INTEGER PRIMARY KEY AUTOINCREMENT, code TEXT UNIQUE NOT NULL, name TEXT NOT NULL, phone TEXT, position TEXT NOT NULL, salary_type TEXT NOT NULL DEFAULT 'Lương tháng', base_salary REAL NOT NULL DEFAULT 0, pay_per_trip REAL NOT NULL DEFAULT 50000, allowance REAL NOT NULL DEFAULT 0, created_at TEXT);''')
     cursor.execute('''CREATE TABLE IF NOT EXISTS salary_advances (id INTEGER PRIMARY KEY AUTOINCREMENT, employee_id INTEGER NOT NULL, amount REAL NOT NULL DEFAULT 0, advance_date TEXT NOT NULL, note TEXT, FOREIGN KEY (employee_id) REFERENCES employees(id));''')
-    cursor.execute('''CREATE TABLE IF NOT EXISTS invoices (id INTEGER PRIMARY KEY AUTOINCREMENT, code TEXT NOT NULL UNIQUE, import_date TEXT NOT NULL, product_id INTEGER NOT NULL, volume REAL NOT NULL, amount REAL NOT NULL, note TEXT, created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP, FOREIGN KEY (product_id) REFERENCES products (id));''')
+    cursor.execute('''CREATE TABLE IF NOT EXISTS invoices (id INTEGER PRIMARY KEY AUTOINCREMENT, code TEXT NOT NULL, import_date TEXT NOT NULL, product_id INTEGER, volume REAL NOT NULL DEFAULT 0, amount REAL NOT NULL, note TEXT, category TEXT DEFAULT 'Vật liệu', vat_amount REAL DEFAULT 0, seller_tax_code TEXT, created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP, FOREIGN KEY (product_id) REFERENCES products (id));''')
+    
+    cursor.execute('''CREATE TABLE IF NOT EXISTS db_metadata (version INTEGER)''')
+    cursor.execute('''SELECT COUNT(*) FROM db_metadata''')
+    if cursor.fetchone()[0] == 0:
+        cursor.execute('''INSERT INTO db_metadata (version) VALUES (1)''')
     
     cursor.execute("CREATE INDEX IF NOT EXISTS idx_orders_customer ON orders(customer_id);")
     cursor.execute("CREATE INDEX IF NOT EXISTS idx_orders_vehicle ON orders(vehicle_id);")

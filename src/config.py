@@ -5,17 +5,30 @@ import json
 # Define AppData directory for the application
 APP_NAME = "VLXD_ThongNhat"
 
+# Xác định thư mục chứa file chạy (.exe hoặc thư mục code)
+if getattr(sys, 'frozen', False):
+    application_path = os.path.dirname(sys.executable)
+else:
+    application_path = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+
+portable_db_path = os.path.join(application_path, "vlxd_thongnhat.db")
+
 if sys.platform == "win32":
-    APP_DATA_DIR = os.path.join(os.getenv('LOCALAPPDATA'), APP_NAME)
+    local_app_data = os.getenv('LOCALAPPDATA') or os.path.expanduser('~')
+    APP_DATA_DIR = os.path.join(local_app_data, APP_NAME)
 else:
     APP_DATA_DIR = os.path.join(os.path.expanduser('~'), f".{APP_NAME}")
 
-# Create the directory if it doesn't exist
 if not os.path.exists(APP_DATA_DIR):
     os.makedirs(APP_DATA_DIR)
 
-DB_PATH = os.path.join(APP_DATA_DIR, "vlxd_thongnhat.db")
-SETTINGS_PATH = os.path.join(APP_DATA_DIR, "settings.json")
+# CHẾ ĐỘ PORTABLE: Nếu thấy file .db nằm cạnh file .exe thì ưu tiên đọc file đó!
+if os.path.exists(portable_db_path):
+    DB_PATH = portable_db_path
+    SETTINGS_PATH = os.path.join(application_path, "settings.json")
+else:
+    DB_PATH = os.path.join(APP_DATA_DIR, "vlxd_thongnhat.db")
+    SETTINGS_PATH = os.path.join(APP_DATA_DIR, "settings.json")
 
 # Business Defaults
 DEFAULT_CREDIT_LIMIT = 50000000.0

@@ -23,17 +23,17 @@ class InventoryView(ttk.Frame):
         title_frame = ttk.Frame(self)
         title_frame.pack(fill="x", pady=(0, 10))
 
-        ttk.Label(title_frame, text="📦 QUẢN LÝ KHO HÀNG & TỒN KHO VẬT TƯ", font=("Segoe UI", 14, "bold"), foreground="#1e3a8a").pack(side="left")
+        ttk.Label(title_frame, text=" QUẢN LÝ KHO HÀNG & TỒN KHO VẬT TƯ", font=("Segoe UI", 14, "bold"), foreground="#1e3a8a").pack(side="left")
 
         # Top Control Bar (Add, Edit, Delete, Stock Import)
         btn_bar = ttk.Frame(self)
         btn_bar.pack(fill="x", pady=(0, 10))
 
-        tk.Button(btn_bar, text="➕ Thêm Vật Liệu", bg="#2563eb", fg="white", font=("Segoe UI", 10, "bold"), padx=10, pady=5, command=self.open_add_product_dialog).pack(side="left", padx=(0, 5))
-        tk.Button(btn_bar, text="✏️ Sửa Vật Liệu", bg="#d97706", fg="white", font=("Segoe UI", 10, "bold"), padx=10, pady=5, command=self.open_edit_product_dialog).pack(side="left", padx=(0, 5))
-        tk.Button(btn_bar, text="❌ Xóa Vật Liệu", bg="#dc2626", fg="white", font=("Segoe UI", 10, "bold"), padx=10, pady=5, command=self.delete_selected_product).pack(side="left", padx=(0, 5))
-        tk.Button(btn_bar, text="🚚 Nhập Hàng Từ Mỏ (Tăng Kho)", bg="#059669", fg="white", font=("Segoe UI", 10, "bold"), padx=10, pady=5, command=self.open_import_stock_dialog).pack(side="left", padx=(0, 5))
-        tk.Button(btn_bar, text="🔄 Tải Lại Kho", bg="#64748b", fg="white", font=("Segoe UI", 10), padx=10, pady=5, command=self.load_data).pack(side="right")
+        tk.Button(btn_bar, text=" Thêm Vật Liệu", bg="#2563eb", fg="white", font=("Segoe UI", 10, "bold"), padx=10, pady=5, command=self.open_add_product_dialog).pack(side="left", padx=(0, 5))
+        tk.Button(btn_bar, text=" Sửa Vật Liệu", bg="#d97706", fg="white", font=("Segoe UI", 10, "bold"), padx=10, pady=5, command=self.open_edit_product_dialog).pack(side="left", padx=(0, 5))
+        tk.Button(btn_bar, text=" Xóa Vật Liệu", bg="#dc2626", fg="white", font=("Segoe UI", 10, "bold"), padx=10, pady=5, command=self.delete_selected_product).pack(side="left", padx=(0, 5))
+        tk.Button(btn_bar, text=" Nhập Hàng Từ Mỏ (Tăng Kho)", bg="#059669", fg="white", font=("Segoe UI", 10, "bold"), padx=10, pady=5, command=self.open_import_stock_dialog).pack(side="left", padx=(0, 5))
+        tk.Button(btn_bar, text=" Tải Lại Kho", bg="#64748b", fg="white", font=("Segoe UI", 10), padx=10, pady=5, command=self.load_data).pack(side="right")
 
         # Inventory Table Component
         self.inventory_table = InventoryTable(self)

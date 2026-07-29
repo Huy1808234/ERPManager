@@ -66,11 +66,18 @@ class SalesForm(ttk.LabelFrame):
             font=("Segoe UI", 9, "bold"), padx=6, command=self.open_quick_vehicle_dialog
         ).pack(side="right", padx=(4, 0))
 
-        ttk.Separator(self, orient="horizontal").grid(row=4, column=0, columnspan=2, sticky="ew", pady=8)
+        # Ngày tạo đơn
+        ttk.Label(self, text="Ngày tạo đơn (VD: YYYY-MM-DD 14:30):", font=("Segoe UI", 9, "bold")).grid(row=4, column=0, sticky="w", pady=4)
+        from datetime import datetime
+        self.ent_date = ttk.Entry(self, width=32)
+        self.ent_date.insert(0, datetime.now().strftime("%Y-%m-%d"))
+        self.ent_date.grid(row=4, column=1, pady=4, sticky="ew")
+
+        ttk.Separator(self, orient="horizontal").grid(row=5, column=0, columnspan=2, sticky="ew", pady=8)
 
         # CÔNG THỨC
         calc_box = ttk.LabelFrame(self, text="  Phép Tính Khối Lượng Đặc Thù ", padding=8)
-        calc_box.grid(row=5, column=0, columnspan=2, sticky="ew", pady=4)
+        calc_box.grid(row=6, column=0, columnspan=2, sticky="ew", pady=4)
 
         ttk.Label(calc_box, text="Số khối/chuyến (m³):").grid(row=0, column=0, sticky="w", pady=3)
         self.ent_vol_per_trip = ttk.Entry(calc_box, width=12)
@@ -89,42 +96,42 @@ class SalesForm(ttk.LabelFrame):
         self.lbl_total_volume.grid(row=2, column=1, sticky="w", pady=4)
 
         # Đơn giá
-        ttk.Label(self, text="Đơn giá bán (đ/m³):").grid(row=6, column=0, sticky="w", pady=2)
+        ttk.Label(self, text="Đơn giá bán (đ/m³):").grid(row=7, column=0, sticky="w", pady=2)
         self.ent_price = ttk.Entry(self, width=32)
-        self.ent_price.grid(row=6, column=1, pady=2, sticky="ew")
+        self.ent_price.grid(row=7, column=1, pady=2, sticky="ew")
         self.ent_price.bind("<KeyRelease>", self.calculate_totals)
 
         self.lbl_price_words = ttk.Label(self, text=" Bằng chữ: Không đồng", font=("Segoe UI", 8, "italic", "bold"), foreground=config.COLOR_PRIMARY_LIGHT)
-        self.lbl_price_words.grid(row=7, column=1, sticky="w", pady=(0, 4))
+        self.lbl_price_words.grid(row=8, column=1, sticky="w", pady=(0, 4))
 
         # Cước VC
-        ttk.Label(self, text="Cước vận chuyển (đ):").grid(row=8, column=0, sticky="w", pady=2)
+        ttk.Label(self, text="Cước vận chuyển (đ):").grid(row=9, column=0, sticky="w", pady=2)
         self.ent_shipping = ttk.Entry(self, width=32)
         self.ent_shipping.insert(0, "100000")
-        self.ent_shipping.grid(row=8, column=1, pady=2, sticky="ew")
+        self.ent_shipping.grid(row=9, column=1, pady=2, sticky="ew")
         self.ent_shipping.bind("<KeyRelease>", self.calculate_totals)
 
         self.lbl_shipping_words = ttk.Label(self, text=" Bằng chữ: Một trăm ngàn đồng", font=("Segoe UI", 8, "italic", "bold"), foreground=config.COLOR_PRIMARY_LIGHT)
-        self.lbl_shipping_words.grid(row=9, column=1, sticky="w", pady=(0, 4))
+        self.lbl_shipping_words.grid(row=10, column=1, sticky="w", pady=(0, 4))
 
         # Tiền trả
-        ttk.Label(self, text="Tiền trả ngay (đ):").grid(row=10, column=0, sticky="w", pady=2)
+        ttk.Label(self, text="Tiền trả ngay (đ):").grid(row=11, column=0, sticky="w", pady=2)
         self.ent_paid = ttk.Entry(self, width=32)
         self.ent_paid.insert(0, "0")
-        self.ent_paid.grid(row=10, column=1, pady=2, sticky="ew")
+        self.ent_paid.grid(row=11, column=1, pady=2, sticky="ew")
         self.ent_paid.bind("<KeyRelease>", self.calculate_totals)
 
         self.lbl_paid_words = ttk.Label(self, text=" Bằng chữ: Không đồng", font=("Segoe UI", 8, "italic", "bold"), foreground=config.COLOR_PRIMARY_LIGHT)
-        self.lbl_paid_words.grid(row=11, column=1, sticky="w", pady=(0, 4))
+        self.lbl_paid_words.grid(row=12, column=1, sticky="w", pady=(0, 4))
 
         # Ghi chú
-        ttk.Label(self, text="Ghi chú đơn hàng:").grid(row=12, column=0, sticky="w", pady=4)
+        ttk.Label(self, text="Ghi chú đơn hàng:").grid(row=13, column=0, sticky="w", pady=4)
         self.ent_note = ttk.Entry(self, width=32)
-        self.ent_note.grid(row=12, column=1, pady=4, sticky="ew")
+        self.ent_note.grid(row=13, column=1, pady=4, sticky="ew")
 
         # Summary box
         summary_frame = ttk.Frame(self, padding=8)
-        summary_frame.grid(row=13, column=0, columnspan=2, sticky="ew", pady=6)
+        summary_frame.grid(row=14, column=0, columnspan=2, sticky="ew", pady=6)
 
         self.lbl_summary_amount = ttk.Label(summary_frame, text="TỔNG TIỀN: 0 VNĐ", font=("Segoe UI", 12, "bold"), foreground=config.COLOR_DANGER)
         self.lbl_summary_amount.pack(anchor="w")
@@ -138,7 +145,7 @@ class SalesForm(ttk.LabelFrame):
 
         # Nút submit
         btn_submit = tk.Button(self, text=" XUẤT ĐƠN HÀNG & TÍNH NỢ", bg=config.COLOR_SUCCESS, fg="white", font=("Segoe UI", 11, "bold"), pady=8, command=self.submit_order)
-        btn_submit.grid(row=14, column=0, columnspan=2, sticky="ew", pady=5)
+        btn_submit.grid(row=15, column=0, columnspan=2, sticky="ew", pady=5)
 
     def load_data(self):
         self.products = product_dao.get_all_products()
@@ -262,9 +269,10 @@ class SalesForm(ttk.LabelFrame):
             shipping = float(self.ent_shipping.get())
             paid = float(self.ent_paid.get())
             note = self.ent_note.get()
+            order_date = self.ent_date.get().strip()
 
             code, total_vol, total_amt, debt = order_dao.create_order_transaction(
-                cust_id, veh['id'], prod['id'], vol_trip, trips, price, shipping, paid, note
+                cust_id, veh['id'], prod['id'], vol_trip, trips, price, shipping, paid, note, order_date
             )
 
             messagebox.showinfo("Thành Công", f"Đã tạo đơn hàng thành công!\nMã đơn: {code}\nKhách hàng: {cust_name}\nTổng xuất: {total_vol:,.1f} m³ {prod['name']}\nTổng tiền: {total_amt:,.0f}đ\nGhi nợ: {debt:,.0f}đ")
